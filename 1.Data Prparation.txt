@@ -1,0 +1,48 @@
+# Import required library
+import pandas as pd
+
+# Load the dataset
+df = pd.read_csv("Heart.csv")
+
+# a) Find Shape of Data
+print("a) Shape of Data:")
+print(df.shape)
+
+
+# b) Find Missing Values
+print("b) Missing Values in each column:")
+print(df.isnull().sum())
+
+
+# c) Find data type of each column
+print("c) Data types of each column:")
+print(df.dtypes)
+
+
+# d) Finding out Zero's
+print("d) Count of zeros in each column:")
+print((df == 0).sum())
+
+
+# e) Find Mean age of patients
+print("e) Mean age of patients:")
+print(df["Age"].mean())
+
+
+# f) Now extract only Age, Sex, ChestPain, RestBP, Chol
+subset = df[["Age", "Sex", "ChestPain", "RestBP", "Chol"]]
+print("f) Subset of selected columns:")
+print(subset.head())
+
+
+
+
+
+from sklearn.model_selection import train_test_split
+x=df[['Age','Sex','ChestPain','RestBP','Chol']]
+y=df[['RestECG','Chol']]
+x_train,x_test,y_train,y_test=train_test_split(x,y,test_size=0.25,random_state=1)
+x_train
+x_test
+y_train
+y_test
