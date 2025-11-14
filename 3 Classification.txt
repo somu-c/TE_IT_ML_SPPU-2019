@@ -1,0 +1,66 @@
+import pandas as pd
+df=pd.read_csv("Admission_Predict.csv")
+df.head(5)
+df.isnull()
+
+
+#replace the values in chance od admit column by 0 or 1
+df['Chance of Admit '] = [1 if each > 0.80 else 0 for each in df['Chance of Admit ']]
+print(df)
+
+
+#Splitting the dataset into training and testing
+from sklearn.model_selection import train_test_split
+x=df[['GRE Score', 'TOEFL Score', 'University Rating', 'SOP', 'LOR ', 'CGPA','Research']]
+y=df[['Chance of Admit ']]
+x_train, x_test, y_train, y_test=train_test_split(x, y, test_size=0.25, random_state=1)
+
+
+print(x_train)
+print(y_train)
+print(x_test)
+print(y_test)
+
+
+from sklearn.tree import DecisionTreeClassifier
+model=DecisionTreeClassifier(criterion='entropy', max_depth=2)
+model.fit(x_train, y_train)
+y_pred=model.predict(x_test)
+print(y_pred)
+
+
+#to calculate confusion matrix
+from sklearn.metrics import confusion_matrix
+matrix=confusion_matrix(y_test, y_pred, labels=[0.0, 1.0])
+matrix
+
+
+#to calculate accuracy of decision tree
+from sklearn.metrics import accuracy_score
+acc=accuracy_score(y_test, y_pred)
+print('Accuracy of decision matrix: ',acc)
+
+
+#to implement decision matrix
+import matplotlib.pyplot as plt
+from sklearn.metrics import ConfusionMatrixDisplay, accuracy_score
+from sklearn.metrics import classification_report
+ConfusionMatrixDisplay.from_predictions(y_test,y_pred)
+plt.title('Confusion matrix')
+plt.show()
+print(f" Accuracy is {accuracy_score(y_test, y_pred)}") 
+print(classification_report(y_test,y_pred))
+
+
+feature_names=df.columns[0:7]
+print (feature_names, end=' ')
+class_names=[str(x) for x in model.classes_] 
+class_names
+
+
+#to implement decision tree
+from sklearn.tree import plot_tree
+
+fig=plt.figure(figsize=(50,30))
+plot_tree(model, feature_names=feature_names, class_names= class_names, filled=True)
+plt.savefig('tree_visualization.png')
