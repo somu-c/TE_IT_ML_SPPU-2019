@@ -1,0 +1,258 @@
+# Importing necessary libraries
+import numpy as np 
+import pandas as pd 
+__________________________
+# Listing all files in the Kaggle input directory
+import os
+for dirname, _, filenames in os.walk('/kaggle/input'):
+    for filename in filenames:
+        print(os.path.join(dirname, filename))
+_______________________________
+df = pd.read_csv('SMSSpamCollection.csv',sep='\t',names=['label','text'])
+df
+_____________________________
+#data preprocessing
+df.shape
+____________________________
+
+!pip install nltk 
+_______________________________
+
+import nltk
+____________________________
+
+nltk.download('punkt_tab') 
+_____________________________
+
+nltk.download('stopwords')  
+____________________________
+sent = 'How are you friends?' 
+
+from nltk.tokenize import word_tokenize 
+word_tokenize(sent) 
+_____________________________________
+
+from nltk.corpus import stopwords 
+
+swords = stopwords.words('english')   
+_______________________________________
+ 
+# Tokenizes the sentence 'sent' and creates a new list 'clean' 
+# containing only the words that are NOT in the English stopwords list
+clean = [word for word in word_tokenize(sent) if word not in swords] 
+_____________________________________
+
+clean 
+_____________________________________
+
+from nltk.corpus import stopwords
+swords = stopwords.words('english')  
+
+clean = [word for word in word_tokenize(sent) if word not in swords]  
+
+clean  
+
+# Stemming words with NLTK
+from nltk.stem import PorterStemmer  
+ps = PorterStemmer()  
+# Create an instance of PorterStemmer for reducing words to their root forms
+
+clean = [ps.stem(word) for word in word_tokenize(sent) 
+         if word not in swords]  
+
+clean  
+________________________________________________
+
+sent = 'Hello friends! How are you? We will learning python today'  
+
+def clean_text(sent):
+   tokens = word_tokenize(sent)  
+    
+    clean = [word for word in tokens if word.isdigit() or word.isalpha()]  
+    # Keep only alphabetic words or numbers, removing punctuation and special characters
+    
+    clean = [ps.stem(word) for word in clean if word not in swords]  
+    # Remove stopwords and apply stemming to reduce words to their root forms
+    
+    return clean  
+    # Return the cleaned and stemmed list of words
+
+clean_text(sent)  
+# Call the function on 'sent' and return the processed list, e.g., ['hello', 'friend', 'learn', 'python', 'today']
+______________________________________________________________
+
+# Pre-processing text data using TF-IDF
+from sklearn.feature_extraction.text import TfidfVectorizer  
+
+tfidf = TfidfVectorizer(analyzer=clean_text)  
+
+x = df['text']  
+
+
+y = df['label']  
+
+________________________________________________________
+x_new = tfidf.fit_transform(x)  
+
+x.shape  
+_________________________________________________
+
+x_new.shape  
+
+_____________________________________________________-
+
+import seaborn as sns  # Import Seaborn library for statistical data visualization
+
+sns.countplot(x=y)  
+# Create a count plot (bar plot) showing the distribution of classes in the target variable 'y'
+____________________________________________________
+
+#cross validation
+from sklearn.model_selection import train_test_split
+x_train,x_test,y_train,y_test = train_test_split(x_new,y,test_size=0.25,random_state=1)
+
+
+print(f"Size of splitted data")
+print(f"x_train {x_train.shape}")
+print(f"y_train {y_train.shape}")
+print(f"y_test {x_test.shape}")
+print(f"y_test {y_test.shape}")
+_____________________________________________
+#gaussian classifier
+from sklearn.naive_bayes import GaussianNB
+
+nb = GaussianNB()
+nb.fit(x_train.toarray(),y_train)
+y_pred_nb = nb.predict(x_test.toarray())
+
+y_test.value_counts()
+______________________________________
+from sklearn.metrics import ConfusionMatrixDisplay, accuracy_score
+from sklearn.metrics import classification_report
+import matplotlib.pyplot as plt
+
+
+ConfusionMatrixDisplay.from_predictions(y_test,y_pred_nb)
+plt.title('Naive bayes')
+plt.show()
+print(f" Accuracy is {accuracy_score(y_test,y_pred_nb)}")
+print(classification_report(y_test,y_pred_nb))
+_____________________________________________________-
+#RandomForestClassifier
+from sklearn.ensemble import RandomForestClassifier
+model_rf =RandomForestClassifier(random_state=1)
+
+model_rf.fit(x_train,y_train)
+_____________________________________________
+
+y_pred_rf = model_rf.predict(x_test) 
+
+
+ConfusionMatrixDisplay.from_predictions(y_test,y_pred_rf)
+plt.title('Random Forest')
+plt.show()
+print(f" Accuracy is {accuracy_score(y_test,y_pred_rf)}")
+print(classification_report(y_test,y_pred_rf))
+_________________________________________________________
+#LogisticRegression
+from sklearn.linear_model import LogisticRegression
+model_lr = LogisticRegression(random_state=1)
+
+model_lr.fit(x_train,y_train)
+y_pred_lr = model_lr.predict(x_test)
+__________________________________________________
+
+ConfusionMatrixDisplay.from_predictions(y_test,y_pred_lr)
+plt.title('Logistic regression')
+plt.show()
+print(f" Accuracy is {accuracy_score(y_test,y_pred_lr)}")
+print(classification_report(y_test,y_pred_lr))
+________________________________________________________________
+
+from sklearn.model_selection import GridSearchCV
+
+
+para = {
+    
+    'criterion':['gini', 'entropy','log_loss'],
+#     'max_features': ['sqrt','log2'],
+#     'random_state': [0,1,2,3,4],
+    'class_weight':['balanced','balanced_subsample']
+}
+
+
+grid = GridSearchCV(model_rf, param_grid=para, cv=5, scoring='accuracy')
+
+
+
+grid.fit(x_train,y_train)
+_____________________________________________________
+
+# Get the best estimator (best model found by GridSearchCV)
+best_rf = grid.best_estimator_
+
+# Predict on test data using the best model
+y_pred_grid = best_rf.predict(x_test)
+
+# Display the confusion matrix
+from sklearn.metrics import ConfusionMatrixDisplay, accuracy_score, classification_report
+import matplotlib.pyplot as plt
+
+ConfusionMatrixDisplay.from_predictions(y_test, y_pred_grid)
+plt.title('Grid Search - Best Random Forest')
+plt.show()
+
+# Print accuracy and detailed classification report
+print(f"Accuracy: {accuracy_score(y_test, y_pred_grid):.4f}")
+print(classification_report(y_test, y_pred_grid))
+------------------------------------------------------------
+
+
+# D. CROSS-VALIDATION AND PERFORMANCE COMPARISON
+
+from sklearn.model_selection import cross_val_score
+
+print("\n====== Cross-Validation Scores (Accuracy) ======\n")
+
+models = {
+    "Gaussian NB" : GaussianNB(),
+    "Random Forest" : RandomForestClassifier(random_state=1),
+    "Logistic Regression" : LogisticRegression(random_state=1, max_iter=2000)
+}
+
+cv_results = {}
+
+for name, model in models.items():
+    if name == "Gaussian NB":
+        scores = cross_val_score(model, x_new.toarray(), y, cv=5, scoring='accuracy')
+    else:
+        scores = cross_val_score(model, x_new, y, cv=5, scoring='accuracy')
+
+    cv_results[name] = scores.mean()
+    print(f"{name}: Mean CV Accuracy = {scores.mean():.4f}")
+
+# Show comparison
+print("\n===== CV Comparison Table =====")
+for k, v in cv_results.items():
+    print(f"{k:20s}: {v:.4f}")
+
+-------------------------------------------------
+
+
+# E. HYPERPARAMETER TUNING COMPARISON
+
+print("\n====== Hyperparameter Tuning Results ======\n")
+
+print("Best Parameters found:", grid.best_params_)
+print(f"Best Accuracy from GridSearchCV: {grid.best_score_:.4f}")
+
+# Add to comparison
+cv_results["Tuned Random Forest"] = grid.best_score_
+
+print("\n===== Final Comparison Table =====")
+for k, v in cv_results.items():
+    print(f"{k:25s}: {v:.4f}")
+
+
+
+
