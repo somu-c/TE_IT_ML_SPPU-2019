@@ -1,0 +1,105 @@
+import pandas as pd 
+import seaborn as sns 
+import matplotlib.pyplot as plt 
+import numpy as np
+import math
+-----
+df = pd.read_csv("temperatures.csv")
+df
+----
+df.head(5)
+df.tail(5)
+
+-------
+#Top 5 data
+top_5_data=df.nlargest(5,"JAN")
+plt.figure(figsize=(15,12))
+
+-----
+
+plt.title("Top 5 Records")
+sns.barplot(x=top_5_data.YEAR,y=top_5_data.JAN)
+
+----------
+
+#2015 data
+data_2015=df[df["YEAR"]==2015]
+xticks=np.array (data_2015 [["JAN", "FEB", "MAR", "APR", "MAY"]].values)
+yticks=["JAN", "FEB", "MAR", "APR", "MAY"]
+plt.figure(figsize=(14,12))
+plt.bar(yticks, xticks[0])
+plt.title("% Month Temperature Data of Year 2015")
+plt.xlabel("Month")
+plt.ylabel("Temperature in Degree Celsius")
+
+-----------
+df.shape
+df.dtypes
+
+
+------------
+#Spliting data as training and testing 
+from sklearn.model_selection import train_test_split 
+x=df[['YEAR']] 
+y=df[['JAN']]
+x_train, x_test, y_train, y_test=train_test_split(x, y, test_size=0.2, random_state=1)
+
+-------------
+print(x_train)
+print(y_train)
+print(x_test)
+print(y_test)
+
+
+----------
+#Building the model
+from sklearn import linear_model
+lm=linear_model.LinearRegression()
+model=lm.fit(x_train, y_train) 
+y_preds_train=lm.predict(x_train)
+y_pred=lm.predict(x_test)
+print(y_pred)
+
+----------
+#Intercept and Slope
+print("Intercept",lm.intercept_)
+print("Slope",lm.coef_)
+-----------
+
+#MSE=> Mean squared error=>(Sum of the actual -predicted )^2
+lm=linear_model.LinearRegression() 
+model=lm.fit(x_train, y_train) 
+preds_train=lm.predict(x_train) 
+preds_test=lm.predict(x_test) 
+y_pred=lm.predict(x_test)
+MSE=np.square(np.subtract(y_test, y_pred)).mean() #Using library function
+print(MSE)
+
+-------------
+from sklearn.metrics import mean_absolute_error, mean_squared_error
+import math
+#MAE
+mean_absolute_error(y_test,y_pred)
+
+#RMSE
+RMSE = math.sqrt(MSE.iloc[0])
+RMSE
+
+---------------
+#plotting graph for testing dataset
+plt.scatter(x_test, y_test, color='blue')
+plt.plot(x_test,y_test, lm.predict(x_test), color='black', linewidth=1)
+#lm.redict(x_test)=>it will give predicted op beacuse(we have to plot both actual and predicted
+plt.title("Temperature vs Year")
+plt.xlabel("YEAR")
+plt.ylabel("Temperature")
+plt.show()
+
+----------------
+#plotting graph for trainig dataset
+plt.scatter(x_train, y_train, color='red')
+plt.plot(x_train, lm.predict(x_train), color='black', linewidth=3)
+plt.title("Temperature vs Year") 
+plt.xlabel("YEAR")
+plt.ylabel("Temperature")
+plt.show()
