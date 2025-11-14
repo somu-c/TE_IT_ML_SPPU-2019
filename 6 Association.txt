@@ -1,0 +1,49 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import pandas as pd
+
+----
+
+!pip install apyori
+
+---
+
+from apyori import apriori
+
+df=pd.read_csv('Market_Basket_Optimisation.csv', header=None)
+df
+
+----
+
+# Convert dataset into list of lists (transactions)
+transactions = []
+for i in range(0, 7500):
+    transactions.append([str(df.values[i, j]) for j in range(0, 20) if str(df.values[i, j]) != 'nan'])
+
+----
+
+
+# Apply Apriori algorithm
+rules = apriori(transactions,
+                min_support=0.004,
+                min_confidence=0.3,
+                min_lift=3,
+                min_length=2)
+
+----
+
+# Convert rules object into a list
+results = list(rules)
+
+----
+
+# Print all the rules
+for i in results:
+    print("\n")
+    print(i)
+    print("********************")
+
+---
+
+# Print number of rules generated
+print("Total rules generated:", len(results))
